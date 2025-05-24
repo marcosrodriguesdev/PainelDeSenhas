@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 export default async function handler(req, res) {
+  console.log("Método:", req.method, "ID:", req.query.id);
   const { id } = req.query;
 
   if (req.method !== 'PATCH') {
