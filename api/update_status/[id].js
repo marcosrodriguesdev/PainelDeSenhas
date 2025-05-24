@@ -11,9 +11,15 @@ export default async function handler(req, res) {
 
   const { error } = await supabase
     .from('senhas')
-    .upsert({ id: parseInt(id), status: 'pronto', updated_at: new Date() });
+    .update({
+      status: true,
+      updated_at: new Date()
+    })
+    .eq('id', parseInt(id));
 
-  if (error) return res.status(500).json({ error });
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
 
-  res.status(200).json({ message: 'Status atualizado com sucesso' });
+  return res.status(200).json({ message: `Senha ${id} atualizada para pronto.` });
 }

@@ -9,23 +9,28 @@
       font-family: Arial, sans-serif;
       margin: 0;
       display: flex;
+      flex-direction: column;
       height: 100vh;
       background-color: #f4f4f4;
       padding: 20px;
-    }
-    #menu input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 10px;
     }
     .container {
       display: flex;
       flex: 1;
       padding: 20px;
       gap: 20px;
-         border: 1px solid #ccc;
+      border: 1px solid #ccc;
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .column {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    #pronto {
+      flex: 2;
+      background-color: #ffcccb;
     }
     .card {
       background-color: #e9ecef;
@@ -35,7 +40,7 @@
       margin: 10px 0;
       cursor: pointer;
       text-align: center;
-      font-size: 5em;
+     em;
       font-weight: bold;
     }
     .highlight {
@@ -49,12 +54,6 @@
   </style>
 </head>
 <body>
-<div id="menu">
-  <h3>Senha Inicial</h3>
-  <label for="senhaInicial">Senha Inicial:</label>
-  <input type="number" id="senhaInicial" placeholder="Ex: 1" min="1" max="999">
-</div>
-
 <div class="container">
   <div class="column" id="em-preparo">
     <h2>🟡 PREPARANDO</h2>
@@ -63,17 +62,10 @@
     <h2>🟢 PRONTO</h2>
   </div>
 </div>
-
 <audio id="ding" src="/ding.mp3" preload="auto"></audio>
-
 <script>
-  let senhaInicial = parseInt(localStorage.getItem('senhaInicial') || '1');
-  document.getElementById('senhaInicial').value = senhaInicial;
-  document.getElementById('senhaInicial').onchange = (e) => {
-    senhaInicial = parseInt(e.target.value);
-    localStorage.setItem('senhaInicial', senhaInicial);
-    carregarDados();
-  };
+  let senhaInicial = parseInt(prompt("Digite a senha inicial:") || '1');
+  localStorage.setItem('senhaInicial', senhaInicial);
 
   async function carregarDados() {
     const res = await fetch(`/api/dados?senhaInicial=${senhaInicial}`);
@@ -82,7 +74,6 @@
     const pronto = document.getElementById('pronto');
     emPreparo.innerHTML = '<h2>🟡 PREPARANDO</h2>';
     pronto.innerHTML = '<h2>🟢 PRONTO</h2>';
-
     data.em_preparo.forEach(t => {
       const div = document.createElement('div');
       div.className = 'card';
@@ -91,7 +82,6 @@
       div.innerText = t.id;
       emPreparo.appendChild(div);
     });
-
     data.prontos.forEach(t => {
       const div = document.createElement('div');
       div.className = 'card';
@@ -106,7 +96,6 @@
     const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
     const destinoColuna = document.getElementById(destino);
     destinoColuna.insertBefore(card, destinoColuna.children[1]);
-
     if (destino === "pronto") {
       card.classList.add("highlight");
       document.getElementById("ding").play();
