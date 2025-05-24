@@ -89,12 +89,19 @@ export default function handler(req, res) {
         .channel('senhas-channel')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'senhas' }, payload => {
           if (payload.new.status) {
+            const container = document.getElementById('senhas-container');
             const div = document.createElement('div');
             div.className = 'card highlight';
-            div.textContent = payload.new.id; // ou payload.new.nome
-            document.getElementById('senhas-container').prepend(div);
-            new Audio('/ding.mp3').play();
-            setTimeout(() => div.classList.remove('highlight'), 3000);
+            div.textContent = payload.new.id;
+
+            // Verifica se a senha já está na lista para evitar duplicação
+            const existente = Array.from(container.children).some(child => child.textContent === String(payload.new.id));
+            if (!existente) {
+              container.prepend(div);
+              new Audio('/ding.mp3').play();
+              setTimeout(() => div.classList.remove('highlight'), 3000);
+            }
+
           }
         })
         .subscribe();
