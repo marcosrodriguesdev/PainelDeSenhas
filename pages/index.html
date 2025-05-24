@@ -105,10 +105,13 @@
     const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
     const destinoColuna = document.getElementById(destino);
     destinoColuna.insertBefore(card, destinoColuna.children[1]);
+
     if (destino === "pronto") {
+      const id = card.dataset.id;
+      console.log("🔁 Movendo card com ID:", id); // Log para depuração
       card.classList.add("highlight");
       document.getElementById("ding").play();
-      fetch(`/api/update_status/${card.dataset.id}`, { method: "PATCH" });
+      fetch(`/api/update_status/${id}`, { method: "PATCH" });
       senhaInicial++;
       localStorage.setItem('senhaInicial', senhaInicial);
       setTimeout(() => card.classList.remove("highlight"), 3000);
