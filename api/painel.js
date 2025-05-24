@@ -33,7 +33,7 @@ export default function handler(req, res) {
         text-align: center;
       }
       .ultima-senha {
-        font-size: 10em;
+        font-size: 14em;
         font-weight: bold;
         text-align: center;
         background-color: #fff;
