@@ -83,7 +83,7 @@ export default function handler(req, res) {
           .from('senhas')
           .select('*')
           .eq('status', true)
-          .order('updated_at', { ascending: false }); // ou 'created_at' se for o campo correto
+          .order('updated_at', { ascending: false });
 
         if (error) return console.error('Erro:', error);
 
@@ -92,7 +92,14 @@ export default function handler(req, res) {
         anterioresContainer.innerHTML = '';
 
         if (data.length > 0) {
+          // Atualiza o conteúdo
           ultimaSenhaDiv.textContent = data[0].id;
+
+          // Aplica a animação
+          ultimaSenhaDiv.classList.remove('highlight'); // Remove se já estiver
+          void ultimaSenhaDiv.offsetWidth; // Força reflow para reiniciar a animação
+          ultimaSenhaDiv.classList.add('highlight');
+
           data.slice(1).forEach(s => {
             const div = document.createElement('div');
             div.className = 'card';
@@ -101,6 +108,7 @@ export default function handler(req, res) {
           });
         }
       }
+
 
       supabase
         .channel('senhas-channel')
