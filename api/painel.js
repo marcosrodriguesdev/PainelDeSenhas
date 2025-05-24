@@ -12,7 +12,7 @@ export default function handler(req, res) {
       body {
         font-family: Arial, sans-serif;
         background: #f0f0f0;
-               height: 100vh;
+        height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -33,7 +33,8 @@ export default function handler(req, res) {
         from { opacity: 0; }
         to { opacity: 1; }
       }
-      position: absolute;
+      .fullscreen-btn {
+        position: absolute;
         top: 10px;
         right: 10px;
         padding: 10px 20px;
@@ -54,6 +55,7 @@ export default function handler(req, res) {
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
       const supabase = createClient('${SUPABASE_URL}', '${SUPABASE_KEY}');
+
       async function fetchSenhasProntas() {
         const { data, error } = await supabase.from('senhas').select('*').eq('status', true);
         if (error) return console.error('Erro:', error);
@@ -62,24 +64,30 @@ export default function handler(req, res) {
         data.forEach(s => {
           const div = document.createElement('div');
           div.className = 'senha';
-          div.textContent = s.nome;
+          div.textContent = s.id; // Altere para s.nome ou s.senha se necessário
           container.appendChild(div);
         });
       }
-      supabase.from('senhas').on('UPDATE', payload => {
-        if (payload.new.status) {
-          fetchSenhasProntas();
-          new Audio('beep-07.wav').play();
-        }
-      }).subscribe();
+
+      supabase
+        .channel('senhas-channel')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'senhas' }, payload => {
+          if (payload.new.status) {
+            fetchSenhasProntas();
+            new Audio('beep-07.wav').play();
+          }
+        })
+        .subscribe();
+
       fetchSenhasProntas();
-      function toggleFullscreen() {
+
+      window.toggleFullscreen = function () {
         if (!document.fullscreenElement) {
           document.documentElement.requestFullscreen();
         } else {
           document.exitFullscreen();
         }
-      }
+      };
     </script>
   </body>
   </html>`;

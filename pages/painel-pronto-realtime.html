@@ -89,7 +89,7 @@
             .on('UPDATE', payload => {
                 if (payload.new.status) {
                     fetchSenhasProntas();
-                    const audio = new Audio('beep-07.wav');
+                    const audio = new Audio('ding.mp3');
                     audio.play();
                 }
             })
