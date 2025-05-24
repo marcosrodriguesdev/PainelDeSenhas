@@ -14,17 +14,33 @@ export default function handler(req, res) {
         background-color: #f4f4f4;
         margin: 0;
         padding: 20px;
+        box }
+      .painel {
         display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
+        gap: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
       }
-      .container {
+      .coluna {
+        flex: 1;
         background-color: #e9ecef;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        text-align:px;
+      }
+      .coluna h2 {
+        margin-top: 0;
+        text-align: center;
+      }
+      .ultima-senha {
+        font-size: 10em;
+        font-weight: bold;
+        text-align: center;
+        background-color: #fff;
+        border: 2px solid #bbb;
+        border-radius: 10px;
+        padding: 30px;
+        margin-top: 20px;
       }
       .card {
         background-color: #fff;
@@ -32,7 +48,7 @@ export default function handler(req, res) {
         border-radius: 6px;
         margin: 10px 0;
         padding: 20px;
-        font-size: 7em;
+        font-size: 4em;
         font-weight: bold;
         text-align: center;
       }
@@ -41,15 +57,21 @@ export default function handler(req, res) {
       }
       @keyframes pulse {
         0% { background-color: #ffe066; transform: scale(1.1); }
-        50% { background-color: #fff3bf; transform: scale(1.5); }
+        50% { background-color: #fff3bf; transform: scale(1.2); }
         100% { background-color: #ffe066; transform: scale(1.1); }
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h2>🟢 PRONTO</h2>
-      <div id="senhas-container"></div>
+    <div class="painel">
+      <div class="coluna">
+        <h2>🔔 Última Senha</h2>
+        <div id="ultima-senha" class="ultima-senha">--</div>
+      </div>
+      <div class="coluna">
+        <h2>🟢 Senhas Anteriores</h2>
+        <div id="senhas-anteriores"></div>
+      </div>
     </div>
     <audio id="ding" src="/ding.mp3" preload="auto"></audio>
     <script type="module">
@@ -57,32 +79,30 @@ export default function handler(req, res) {
       const supabase = createClient('${SUPABASE_URL}', '${SUPABASE_KEY}');
 
       async function fetchSenhasProntas() {
-        const { data, error } = await supabase.from('senhas').select('*').eq('status', true);
+        const { data, error } = await supabase.from('senhas').select('*').eq('status', true).order('id', { ascending: false });
         if (error) return console.error('Erro:', error);
-        const container = document.getElementById('senhas-container');
-        container.innerHTML = '';
-        data.forEach(s => {
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.textContent = s.id;
-          container.appendChild(div);
-        });
+
+        const ultimaSenhaDiv = document.getElementById('ultima-senha');
+        const anterioresContainer = document.getElementById('senhas-anteriores');
+        anterioresContainer.innerHTML = '';
+
+        if (data.length > 0) {
+          ultimaSenhaDiv.textContent = data[0].id;
+          data.slice(1).forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.textContent = s.id;
+            anterioresContainer.appendChild(div);
+          });
+        }
       }
 
       supabase
         .channel('senhas-channel')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'senhas' }, payload => {
           if (payload.new.status) {
-            const container = document.getElementById('senhas-container');
-            const div = document.createElement('div');
-            div.className = 'card highlight';
-            div.textContent = payload.new.id;
-            const existente = Array.from(container.children).some(child => child.textContent === String(payload.new.id));
-            if (!existente) {
-              container.prepend(div);
-              document.getElementById('ding').play();
-              setTimeout(() => div.classList.remove('highlight'), 3000);
-            }
+            document.getElementById('ding').play();
+            fetchSenhasProntas();
           }
         })
         .subscribe();
