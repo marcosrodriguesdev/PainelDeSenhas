@@ -69,19 +69,15 @@
   </div>
   <audio id="ding" src="/ding.mp3" preload="auto"></audio>
   <script>
-    let senhaInicial = localStorage.getItem('senhaInicial') || 1;
-    document.getElementById('senhaInicial').value = senhaInicial;
-    document.getElementById('senhaInicial').onchange = (e) => {
-      senhaInicial = e.target.value;
-      localStorage.setItem('senhaInicial', senhaInicial);
-      carregarDados();
-    };
+    let senhaInicial = parseInt(localStorage.getItem('senhaInicial') || '1');
 
     async function carregarDados() {
       const res = await fetch(`/api/dados?senhaInicial=${senhaInicial}`);
       const data = await res.json();
+
       const emPreparo = document.getElementById('em-preparo');
       const pronto = document.getElementById('pronto');
+
       emPreparo.innerHTML = '<h2>🟡 PREPARANDO</h2>';
       pronto.innerHTML = '<h2>🟢 PRONTO</h2>';
 
@@ -113,14 +109,19 @@
         card.classList.add("highlight");
         document.getElementById("ding").play();
         fetch(`/api/update_status/${card.dataset.id}`, { method: "PATCH" });
-        setTimeout(() => card.classList.remove("highlight"), 3000);
+
+        // Avança a senha inicial
         senhaInicial++;
         localStorage.setItem('senhaInicial', senhaInicial);
+
+        setTimeout(() => card.classList.remove("highlight"), 3000);
         carregarDados();
       }
     }
 
+    setInterval(carregarDados, 30000);
     carregarDados();
   </script>
+
 </body>
 </html>
