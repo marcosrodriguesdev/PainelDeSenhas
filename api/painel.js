@@ -42,23 +42,23 @@ export default function handler(req, res) {
         padding: 30px;
         margin-top: 20px;
       }
+      .highlight {
+        animation: pulse 1s ease-in-out 3;
+      }
+      @keyframes pulse {
+        0% { background-color: #ffe066; transform: scale(1.1); }
+        50% { background-color: #fff3bf; transform: scale(1.5); }
+        100% { background-color: #ffe066; transform: scale(1.1); }
+      }
       .card {
         background-color: #fff;
         border: 1px solid #bbb;
         border-radius: 6px;
         margin: 10px 0;
         padding: 20px;
-        font-size: 4em;
+        font-size: 5em;
         font-weight: bold;
         text-align: center;
-      }
-      .highlight {
-        animation: pulse 1s ease-in-out 3;
-      }
-      @keyframes pulse {
-        0% { background-color: #ffe066; transform: scale(1.1); }
-        50% { background-color: #fff3bf; transform: scale(1.2); }
-        100% { background-color: #ffe066; transform: scale(1.1); }
       }
     </style>
   </head>
@@ -79,7 +79,12 @@ export default function handler(req, res) {
       const supabase = createClient('${SUPABASE_URL}', '${SUPABASE_KEY}');
 
       async function fetchSenhasProntas() {
-        const { data, error } = await supabase.from('senhas').select('*').eq('status', true).order('id', { ascending: false });
+        const { data, error } = await supabase
+          .from('senhas')
+          .select('*')
+          .eq('status', true)
+          .order('updated_at', { ascending: false }); // ou 'created_at' se for o campo correto
+
         if (error) return console.error('Erro:', error);
 
         const ultimaSenhaDiv = document.getElementById('ultima-senha');
