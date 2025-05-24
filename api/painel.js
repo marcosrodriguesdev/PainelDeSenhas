@@ -93,7 +93,7 @@ export default function handler(req, res) {
             div.className = 'card highlight';
             div.textContent = payload.new.id; // ou payload.new.nome
             document.getElementById('senhas-container').prepend(div);
-            new Audio('ding.mp3').play();
+            new Audio('/ding.mp3').play();
             setTimeout(() => div.classList.remove('highlight'), 3000);
           }
         })

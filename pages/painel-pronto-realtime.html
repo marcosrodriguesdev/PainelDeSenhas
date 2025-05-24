@@ -52,6 +52,7 @@
         <h1>Senhas Prontas</h1>
         <div id="senhas-container"></div>
     </div>
+    <audio id="ding" src="../ding.mp3" preload="auto"></audio>
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -89,7 +90,7 @@
             .on('UPDATE', payload => {
                 if (payload.new.status) {
                     fetchSenhasProntas();
-                    const audio = new Audio('ding.mp3');
+                    const audio = new Audio('/ding.mp3');
                     audio.play();
                 }
             })
