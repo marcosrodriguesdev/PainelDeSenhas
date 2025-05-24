@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Senhas Prontas - Realtime</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .senha {
+            font-size: 2em;
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button id="fullscreen-btn">Fullscreen</button>
+    <div class="container">
+        <h1>Senhas Prontas</h1>
+        <div id="senhas-container"></div>
+    </div>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const SUPABASE_URL = 'your-supabase-url';
+        const SUPABASE_KEY = 'your-supabase-key';
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function fetchSenhasProntas() {
+            const { data, error } = await supabase
+                .from('senhas')
+                .select('*')
+                .eq('status', true);
+
+            if (error) {
+                console.error('Erro ao buscar senhas prontas:', error);
+                return;
+            }
+
+            const senhasContainer = document.getElementById('senhas-container');
+            senhasContainer.innerHTML = '';
+
+            data.forEach(senha => {
+                const senhaDiv = document.createElement('div');
+                senhaDiv.className = 'senha';
+                senhaDiv.textContent = senha.senha;
+                senhasContainer.appendChild(senhaDiv);
+            });
+        }
+
+        fetchSenhasProntas();
+
+        supabase
+            .from('senhas')
+            .on('UPDATE', payload => {
+                if (payload.new.status) {
+                    fetchSenhasProntas();
+                    const audio = new Audio('beep-07.wav');
+                    audio.play();
+                }
+            })
+            .subscribe();
+
+        document.getElementById('fullscreen-btn').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+                document.getElementById('fullscreen-btn').textContent = 'Exit Fullscreen';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    document.getElementById('fullscreen-btn').textContent = 'Fullscreen';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

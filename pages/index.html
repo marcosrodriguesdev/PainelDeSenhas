@@ -1,131 +1,137 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel de Chamada de Senhas</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background-color: #f4f4f4;
-      padding: 20px;
-    }
-    .container {
-      display: flex;
-      flex: 1;
-      padding: 20px;
-      gap: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .column {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      background-color: #e9ecef;
-      font-size: 1.5em;
-    }
-    #pronto {
-      flex: 2;
-    }
-    .card {
-      background-color: #fff;
-      border: 1px solid #bbb;
-      border-radius: 6px;
-      10px 0;
-      cursor: pointer;
-      text-align: center;
-      font-weight: bold;
-    }
-    #em-preparo .card {
-      font-size: 2em;
-    }
-    #pronto .card {
-      font-size: 5em;
-    }
-    .highlight {
-      animation: pulse 1s ease-in-out 3;
-    }
-    @keyframes pulse {
-      0% { background-color: #ffe066; transform: scale(1.1); }
-      50% { background-color: #fff3bf; transform: scale(1.2); }
-      100% { background-color: #ffe066; transform: scale(1.1); }
-    }
-  </style>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Painel de Chamada de Senhas</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          height: 100vh;
+          background-color: #f4f4f4;
+          padding: 20px;
+        }
+        .container {
+          display: flex;
+          flex: 1;
+          padding: 20px;
+          gap: 20px;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .column {
+          flex: 1;
+          padding: 10px;
+          border-radius: 8px;
+          background-color: #e9ecef;
+          font-size: 1.5em;
+        }
+        #pronto {
+          flex: 2;
+        }
+        .card {
+          background-color: #fff;
+          border: 1px solid #bbb;
+          border-radius: 6px;
+          10px 0;
+          cursor: pointer;
+          text-align: center;
+          font-weight: bold;
+        }
+        #em-preparo .card {
+          font-size: 2em;
+        }
+        #pronto .card {
+          font-size: 5em;
+        }
+        .highlight {
+          animation: pulse 1s ease-in-out 3;
+        }
+        @keyframes pulse {
+          0% { background-color: #ffe066; transform: scale(1.1); }
+          50% { background-color: #fff3bf; transform: scale(1.2); }
+          100% { background-color: #ffe066; transform: scale(1.1); }
+        }
+    </style>
 </head>
 <body>
 <div class="container">
-  <div class="column" id="em-preparo">
-    <h2>🟡 PREPARANDO</h2>
-  </div>
-  <div class="column" id="pronto">
-    <h2>🟢 PRONTO</h2>
-  </div>
+    <div class="column" id="em-preparo">
+        <h2>🟡 PREPARANDO</h2>
+    </div>
+    <div class="column" id="pronto">
+        <h2>🟢 PRONTO</h2>
+    </div>
 </div>
 <audio id="ding" src="/ding.mp3" preload="auto"></audio>
 <script>
-  let senhaInicial = parseInt(prompt("Digite a senha inicial:") || '1');
-  localStorage.setItem('senhaInicial', senhaInicial);
+    let senhaInicial = parseInt(prompt("Digite a senha inicial:") || '1');
+    localStorage.setItem('senhaInicial', senhaInicial);
 
-  // Resetar senhas prontas ao iniciar
-  fetch('/api/reset', { method: 'POST' })
-    .then(res => res.json())
-    .then(data => {
-      console.log('🔁 Reset realizado:', data.message);
-      carregarDados();
-    })
-    .catch(err => console.error('❌ Erro ao resetar:', err));
+    // Resetar senhas prontas ao iniciar
+    fetch('/api/reset', { method: 'POST' })
+      .then(res => res.json())
+      .then(data => {
+        console.log('🔁 Reset realizado:', data.message);
+        carregarDados();
+      })
+      .catch(err => console.error('❌ Erro ao resetar:', err));
 
-  async function carregarDados() {
-    const res = await fetch(`/api/dados?senhaInicial=${senhaInicial}`);
-    const data = await res.json();
-    const emPreparo = document.getElementById('em-preparo');
-    const pronto = document.getElementById('pronto');
-    emPreparo.innerHTML = '<h2>🟡 PREPARANDO</h2>';
-    pronto.innerHTML = '<h2>🟢 PRONTO</h2>';
+    async function carregarDados() {
+      const res = await fetch(`/api/dados?senhaInicial=${senhaInicial}`);
+      const data = await res.json();
+      const emPreparo = document.getElementById('em-preparo');
+      const pronto = document.getElementById('pronto');
+      emPreparo.innerHTML = '<h2>🟡 PREPARANDO</h2>';
+      pronto.innerHTML = '<h2>🟢 PRONTO</h2>';
 
-    data.em_preparo.forEach(t => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.dataset.id = t.id;
-      div.onclick = () => mover(div);
-      div.innerText = t.id;
-      emPreparo.appendChild(div);
-    });
+      data.em_preparo.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.dataset.id = t.id;
+        div.onclick = () => mover(div);
+        div.innerText = t.id;
+        emPreparo.appendChild(div);
+      });
 
-    data.prontos.forEach(t => {
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.dataset.id = t.id;
-      div.onclick = () => mover(div);
-      div.innerText = t.id;
-      pronto.appendChild(div);
-    });
-  }
-
-  function mover(card) {
-    const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
-    const destinoColuna = document.getElementById(destino);
-    destinoColuna.insertBefore(card, destinoColuna.children[1]);
-
-    if (destino === "pronto") {
-      const id = card.dataset.id;
-      console.log("🔁 Movendo card com ID:", id);
-      card.classList.add("highlight");
-      document.getElementById("ding").play();
-
-      fetch(`/api/update_status/${id}`, { method: "PATCH" })
-        .then(() => {
-          setTimeout(() => card.classList.remove("highlight"), 3000);
-          carregarDados();
-        });
+      data.prontos.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.dataset.id = t.id;
+        div.onclick = () => mover(div);
+        div.innerText = t.id;
+        pronto.appendChild(div);
+      });
     }
+
+    function mover(card) {
+      const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
+      const destinoColuna = document.getElementById(destino);
+      destinoColuna.insertBefore(card, destinoColuna.children[1]);
+
+      if (destino === "pronto") {
+        const id = card.dataset.id;
+        console.log("🔁 Movendo card com ID:", id);
+        card.classList.add("highlight");
+        const audio = document.getElementById("ding");
+         if (audio) {
+            audio.play().catch(err => {
+            console.warn("⚠️ Erro ao reproduzir som:", err.message);
+        });
   }
+
+
+        fetch(`/api/update_status/${id}`, { method: "PATCH" })
+          .then(() => {
+            setTimeout(() => card.classList.remove("highlight"), 3000);
+            carregarDados();
+          });
+      }
+    }
 </script>
 </body>
 </html>
