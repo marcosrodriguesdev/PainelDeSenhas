@@ -11,7 +11,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
   }
 
-  console.log("📦 Atualizando senha ID:", id);
+  const idNum = parseInt(id);
+  if (isNaN(idNum)) {
+    console.error("❌ ID inválido:", id);
+    return res.status(400).json({ error: 'ID inválido' });
+  }
+
+  console.log("📦 Atualizando senha ID:", idNum);
 
   const { error } = await supabase
     .from('senhas')
@@ -19,13 +25,13 @@ export default async function handler(req, res) {
       status: true,
       updated_at: new Date()
     })
-    .eq('id', parseInt(id));
+    .eq('id', idNum);
 
   if (error) {
     console.error("❌ Erro ao atualizar:", error.message);
     return res.status(500).json({ error: error.message });
   }
 
-  console.log("✅ Senha atualizada com sucesso:", id);
-  return res.status(200).json({ message: `Senha ${id} atualizada para pronto.` });
+  console.log("✅ Senha atualizada com sucesso:", idNum);
+  return res.status(200).json({ message: `Senha ${idNum} atualizada para pronto.` });
 }
