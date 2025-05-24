@@ -74,7 +74,15 @@
 <audio id="ding" src="/ding.mp3" preload="auto"></audio>
 <script>
   let senhaInicial = parseInt(prompt("Digite a senha inicial:") || '1');
-  localStorage.setItem('senhaInicial', senhaInicial);
+localStorage.setItem('senhaInicial', senhaInicial);
+
+// Resetar senhas prontas apenas uma vez
+if (!localStorage.getItem('resetFeito')) {
+  fetch('/api/reset', { method: 'POST' }).then(() => {
+    localStorage.setItem('resetFeito', 'true');
+  });
+}
+
 
   async function carregarDados() {
     const res = await fetch(`/api/dados?senhaInicial=${senhaInicial}`);
@@ -102,22 +110,24 @@
   }
 
   function mover(card) {
-    const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
-    const destinoColuna = document.getElementById(destino);
-    destinoColuna.insertBefore(card, destinoColuna.children[1]);
+  const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
+  const destinoColuna = document.getElementById(destino);
+  destinoColuna.insertBefore(card, destinoColuna.children[1]);
 
-    if (destino === "pronto") {
-      const id = card.dataset.id;
-      console.log("🔁 Movendo card com ID:", id); // Log para depuração
-      card.classList.add("highlight");
-      document.getElementById("ding").play();
-      fetch(`/api/update_status/${id}`, { method: "PATCH" });
-      senhaInicial++;
-      localStorage.setItem('senhaInicial', senhaInicial);
-      setTimeout(() => card.classList.remove("highlight"), 3000);
-      carregarDados();
-    }
+  if (destino === "pronto") {
+    const id = card.dataset.id;
+    console.log("🔁 Movendo card com ID:", id);
+    card.classList.add("highlight");
+    document.getElementById("ding").play();
+
+    fetch(`/api/update_status/${id}`, { method: "PATCH" })
+      .then(() => {
+        setTimeout(() => card.classList.remove("highlight"), 3000);
+        carregarDados(); // Recarrega sem alterar senhaInicial
+      });
   }
+}
+
 
   setInterval(carregarDados, 30000);
   carregarDados();
