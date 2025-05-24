@@ -13,6 +13,7 @@ export default function handler(req, res) {
         font-family: Arial, sans-serif;
         background: #f0f0f0;
         height: 100vh;
+        margin: 0;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -23,15 +24,30 @@ export default function handler(req, res) {
         border-radius: 10px;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
         text-align: center;
+        width: 90%;
+        max-width: 600px;
       }
-      .senha {
-        font-size: 2em;
+      .card {
+        background-color: #fff;
+        border: 1px solid #bbb;
+        border-radius: 6px;
         margin: 10px 0;
+        padding: 20px;
+        font-size: 3em;
+        font-weight: bold;
         animation: fadeIn 0.5s;
+      }
+      .highlight {
+        animation: pulse 1s ease-in-out 3;
       }
       @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
+      }
+      @keyframes pulse {
+        0% { background-color: #ffe066; transform: scale(1.1); }
+        50% { background-color: #fff3bf; transform: scale(1.2); }
+        100% { background-color: #ffe066; transform: scale(1.1); }
       }
       .fullscreen-btn {
         position: absolute;
@@ -63,7 +79,7 @@ export default function handler(req, res) {
         container.innerHTML = '';
         data.forEach(s => {
           const div = document.createElement('div');
-          div.className = 'senha';
+          div.className = 'card';
           div.textContent = s.id; // Altere para s.nome ou s.senha se necessário
           container.appendChild(div);
         });
@@ -73,8 +89,12 @@ export default function handler(req, res) {
         .channel('senhas-channel')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'senhas' }, payload => {
           if (payload.new.status) {
-            fetchSenhasProntas();
-            new Audio('beep-07.wav').play();
+            const div = document.createElement('div');
+            div.className = 'card highlight';
+            div.textContent = payload.new.id; // ou payload.new.nome
+            document.getElementById('senhas-container').prepend(div);
+            new Audio('ding.mp3').play();
+            setTimeout(() => div.classList.remove('highlight'), 3000);
           }
         })
         .subscribe();
