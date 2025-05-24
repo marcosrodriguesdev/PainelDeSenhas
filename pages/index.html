@@ -33,15 +33,11 @@
     #pronto {
       flex: 2;
     }
-    #em-preparo {
-      font-size: 1.5em;
-    }
     .card {
       background-color: #fff;
       border: 1px solid #bbb;
       border-radius: 6px;
-      padding: 20px;
-      margin: 10px 0;
+      10px 0;
       cursor: pointer;
       text-align: center;
       font-weight: bold;
@@ -74,15 +70,16 @@
 <audio id="ding" src="/ding.mp3" preload="auto"></audio>
 <script>
   let senhaInicial = parseInt(prompt("Digite a senha inicial:") || '1');
-localStorage.setItem('senhaInicial', senhaInicial);
+  localStorage.setItem('senhaInicial', senhaInicial);
 
-// Resetar senhas prontas apenas uma vez
-if (!localStorage.getItem('resetFeito')) {
-  fetch('/api/reset', { method: 'POST' }).then(() => {
-    localStorage.setItem('resetFeito', 'true');
-  });
-}
-
+  // Resetar senhas prontas ao iniciar
+  fetch('/api/reset', { method: 'POST' })
+    .then(res => res.json())
+    .then(data => {
+      console.log('🔁 Reset realizado:', data.message);
+      carregarDados();
+    })
+    .catch(err => console.error('❌ Erro ao resetar:', err));
 
   async function carregarDados() {
     const res = await fetch(`/api/dados?senhaInicial=${senhaInicial}`);
@@ -91,6 +88,7 @@ if (!localStorage.getItem('resetFeito')) {
     const pronto = document.getElementById('pronto');
     emPreparo.innerHTML = '<h2>🟡 PREPARANDO</h2>';
     pronto.innerHTML = '<h2>🟢 PRONTO</h2>';
+
     data.em_preparo.forEach(t => {
       const div = document.createElement('div');
       div.className = 'card';
@@ -99,6 +97,7 @@ if (!localStorage.getItem('resetFeito')) {
       div.innerText = t.id;
       emPreparo.appendChild(div);
     });
+
     data.prontos.forEach(t => {
       const div = document.createElement('div');
       div.className = 'card';
@@ -110,27 +109,23 @@ if (!localStorage.getItem('resetFeito')) {
   }
 
   function mover(card) {
-  const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
-  const destinoColuna = document.getElementById(destino);
-  destinoColuna.insertBefore(card, destinoColuna.children[1]);
+    const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
+    const destinoColuna = document.getElementById(destino);
+    destinoColuna.insertBefore(card, destinoColuna.children[1]);
 
-  if (destino === "pronto") {
-    const id = card.dataset.id;
-    console.log("🔁 Movendo card com ID:", id);
-    card.classList.add("highlight");
-    document.getElementById("ding").play();
+    if (destino === "pronto") {
+      const id = card.dataset.id;
+      console.log("🔁 Movendo card com ID:", id);
+      card.classList.add("highlight");
+      document.getElementById("ding").play();
 
-    fetch(`/api/update_status/${id}`, { method: "PATCH" })
-      .then(() => {
-        setTimeout(() => card.classList.remove("highlight"), 3000);
-        carregarDados(); // Recarrega sem alterar senhaInicial
-      });
+      fetch(`/api/update_status/${id}`, { method: "PATCH" })
+        .then(() => {
+          setTimeout(() => card.classList.remove("highlight"), 3000);
+          carregarDados();
+        });
+    }
   }
-}
-
-
-  setInterval(carregarDados, 30000);
-  carregarDados();
 </script>
 </body>
 </html>
