@@ -1,126 +1,19 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel de Chamada de Senhas</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      background-color: #f4f4f4;
-         padding: 20px;
-    }
-    #menu input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 10px;
-    }
-    .container {
-      display: flex;
-      flex: 1;
-      padding: 20px;
-      gap: 20px;
-    }
-    .column {
-      padding: 10px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    #em-preparo {
-         }
-    .card {
-      background-color: #e9ecef;
-      border: 1px solid #bbb;
-      border-radius: 6px;
-      padding: 20px;
-      margin: 10px 0;
-      cursor: pointer;
-      text-align: center;
-      font-size: 5em;
-      font-weight: bold;
-    }
-    .highlight {
-      animation: pulse 1s ease-in-out 3;
-    }
-    @keyframes pulse {
-      0% { background-color: #ffe066; transform: scale(1.1); }
-      50% { background-color: #fff3bf; transform: scale(1.2); }
-      100% { background-color: #ffe066; transform: scale(1.1); }
-    }
-  </style>
-</head>
-<body>
-  <div id="menu">
-    <h3>Senha Inicial</h3>
-    <input type="number" id="senhaInicial" placeholder="Ex: 1" min="1" max="999" />
-  </div>
-  <div class="container">
-    <div class="column" id="em-preparo">
-      <h2>🟡 PREPARANDO</h2>
-    </div>
-    <div class="column" id="pronto">
-      <h2>🟢 PRONTO</h2>
-    </div>
-  </div>
-  <audio id="ding" src="/ding.mp3" preload="auto"></audio>
-  <script>
-    let senhaInicial = localStorage.getItem('senhaInicial') || 1;
-    document.getElementById('senhaInicial').value = senhaInicial;
-    document.getElementById('senhaInicial').onchange = (e) => {
-      senhaInicial = e.target.value;
-      localStorage.setItem('senhaInicial', senhaInicial);
-      carregarDados();
-    };
+import { createClient } from '@supabase/supabase-js';
 
-    async function carregarDados() {
-      const res = await fetch(`/api/dados?senhaInicial=${senhaInicial}`);
-      const data = await res.json();
-      const emPreparo = document.getElementById('em-preparo');
-      const pronto = document.getElementById('pronto');
-      emPreparo.innerHTML = '<h2>🟡 PREPARANDO</h2>';
-      pronto.innerHTML = '<h2>🟢 PRONTO</h2>';
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-      data.em_preparo.forEach(t => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.dataset.id = t.id;
-        div.onclick = () => mover(div);
-        div.innerText = t.id;
-        emPreparo.appendChild(div);
-      });
+export default async function handler(req, res) {
+  const senhaInicial = parseInt(req.query.senhaInicial || '1');
+  const em_preparo = Array.from({ length: 10 }, (_, i) => ({
+    id: senhaInicial + i
+  }));
 
-      data.prontos.forEach(t => {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.dataset.id = t.id;
-        div.onclick = () => mover(div);
-        div.innerText = t.id;
-        pronto.appendChild(div);
-      });
-    }
+  const { data, error } = await supabase
+    .from('senhas')
+    .select('*')
+    .eq('status', 'pronto');
 
-    function mover(card) {
-      const destino = card.parentElement.id === "em-preparo" ? "pronto" : "em-preparo";
-      const destinoColuna = document.getElementById(destino);
-      destinoColuna.insertBefore(card, destinoColuna.children[1]);
+  if (error) return res.status(500).json({ error });
 
-      if (destino === "pronto") {
-        card.classList.add("highlight");
-        document.getElementById("ding").play();
-        fetch(`/api/update_status/${card.dataset.id}`, { method: "PATCH" });
-        setTimeout(() => card.classList.remove("highlight"), 3000);
-        senhaInicial++;
-        localStorage.setItem('senhaInicial', senhaInicial);
-        carregarDados();
-      }
-    }
-
-    carregarDados();
-  </script>
-</body>
-</html>
+  res.status(200).json({ em_preparo, prontos: data });
+}
