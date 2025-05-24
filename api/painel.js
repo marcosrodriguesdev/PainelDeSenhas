@@ -33,12 +33,12 @@ export default function handler(req, res) {
         border-radius: 6px;
         margin: 10px 0;
         padding: 20px;
-        font-size: 3em;
+        font-size: 8em;
         font-weight: bold;
         animation: fadeIn 0.5s;
       }
       .highlight {
-        animation: pulse 1s ease-in-out 3;
+        animation: pulse 1s ease-in-out 6;
       }
       @keyframes fadeIn {
         from { opacity: 0; }
@@ -46,7 +46,7 @@ export default function handler(req, res) {
       }
       @keyframes pulse {
         0% { background-color: #ffe066; transform: scale(1.1); }
-        50% { background-color: #fff3bf; transform: scale(1.2); }
+        50% { background-color: #fff3bf; transform: scale(1.5); }
         100% { background-color: #ffe066; transform: scale(1.1); }
       }
       .fullscreen-btn {
