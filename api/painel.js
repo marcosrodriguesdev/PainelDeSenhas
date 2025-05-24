@@ -73,7 +73,7 @@ export default function handler(req, res) {
         <div id="senhas-anteriores"></div>
       </div>
     </div>
-    <audio id="ding" src="/ding.mp3" preload="auto"></audio>
+    <audio id="ding" src="https://github.com/marcosrodriguesdev/PainelDeSenhas/raw/refs/heads/main/public/ding.mp3" preload="auto"></audio>
     <script type="module">
       import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
       const supabase = createClient('${SUPABASE_URL}', '${SUPABASE_KEY}');
