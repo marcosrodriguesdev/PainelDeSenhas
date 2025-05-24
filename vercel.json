@@ -5,7 +5,7 @@
     { "src": "pages/index.html", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/update_status/(.*)", "dest": "/api/update_status/$1.js" },
+    { "src": "/api/update_status/(.*)", "dest": "/api/update_status/[id].js" },
     { "src": "/api/(.*)", "dest": "/api/$1.js" },
     { "src": "/", "dest": "/pages/index.html" }
   ]
