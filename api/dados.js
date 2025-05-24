@@ -5,23 +5,28 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 export default async function handler(req, res) {
   const senhaInicial = parseInt(req.query.senhaInicial || '1');
 
-  // Gera as 10 senhas a partir da senha inicial
-  const todas = Array.from({ length: 10 }, (_, i) => senhaInicial + i);
-
-  // Busca as senhas já marcadas como "pronto"
-  const { data: prontos, error } = await supabase
+  // Busca as 10 senhas a partir da senha inicial que ainda não estão prontas
+  const { data: em_preparo, error: erroPreparo } = await supabase
     .from('senhas')
     .select('id')
-    .eq('status', 'pronto');
+    .eq('status', false)
+    .gte('id', senhaInicial)
+    .order('id', { ascending: true })
+    .limit(10);
 
-  if (error) return res.status(500).json({ error });
+  // Busca todas as senhas que já estão prontas
+  const { data: prontos, error: erroProntos } = await supabase
+    .from('senhas')
+    .select('id')
+    .eq('status', true)
+    .order('updated_at', { ascending: false });
 
-  const idsProntos = prontos.map(s => s.id);
+  if (erroPreparo || erroProntos) {
+    return res.status(500).json({ error: erroPreparo || erroProntos });
+  }
 
-  // Remove da lista "em_preparo" as que já estão prontas
-  const em_preparo = todas
-    .filter(id => !idsProntos.includes(id))
-    .map(id => ({ id }));
-
-  res.status(200).json({ em_preparo, prontos });
+  res.status(200).json({
+    em_preparo: em_preparo.map(s => ({ id: s.id })),
+    prontos: prontos.map(s => ({ id: s.id }))
+  });
 }
